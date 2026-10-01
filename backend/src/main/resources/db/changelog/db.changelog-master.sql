@@ -266,3 +266,23 @@ FROM (VALUES
     ('Cashback & Rewards',      'INCOME',  'bi-gift',            '#f59e0b'),
     ('Other Income',            'INCOME',  'bi-cash-coin',       '#84cc16')
 ) AS seed(name, type, icon, color_code);
+
+--changeset alterTablePasskeyCredentialsAddStatus:16
+ALTER TABLE passkey_credentials ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE passkey_credentials ADD COLUMN backup_eligible BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE passkey_credentials ADD COLUMN display_name VARCHAR(64);
+ALTER TABLE passkey_credentials ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE passkey_credentials ALTER COLUMN backup_eligible DROP DEFAULT;
+
+--changeset alterTablePasskeyChallengesAddRequest:17
+-- challenge_request holds the full serialized creation options or assertion request. Verification
+-- must replay exactly what was issued; rebuilding the options at that point would silently drop
+-- allowCredentials and the user-verification requirement, verifying against weaker constraints
+-- than the client was actually given.
+ALTER TABLE passkey_challenges ADD COLUMN challenge_request TEXT NOT NULL DEFAULT '';
+ALTER TABLE passkey_challenges ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING';
+ALTER TABLE passkey_challenges ADD COLUMN session_id VARCHAR(40);
+ALTER TABLE passkey_challenges ADD COLUMN display_name VARCHAR(64);
+ALTER TABLE passkey_challenges ALTER COLUMN challenge_request DROP DEFAULT;
+ALTER TABLE passkey_challenges ALTER COLUMN status DROP DEFAULT;
+CREATE INDEX ix_passkey_challenges_expiry ON passkey_challenges (expires_at);

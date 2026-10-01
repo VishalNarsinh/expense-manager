@@ -1,6 +1,7 @@
 package com.expensemanager.domain.jpa;
 
 import com.expensemanager.common.domain.IdentityJpaDomain;
+import com.expensemanager.domain.enums.PasskeyChallengeStatus;
 import com.expensemanager.domain.enums.PasskeyChallengeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +31,27 @@ public class PasskeyChallenge extends IdentityJpaDomain {
 
 	@Column(name = "challenge", nullable = false, length = 255)
 	private String challenge;
+
+	/**
+	 * The creation options or assertion request exactly as issued, serialized.
+	 *
+	 * <p>Verification replays this rather than rebuilding it. Reconstructing the options at
+	 * verification time silently drops allowCredentials and the user-verification requirement, so
+	 * the assertion would be checked against weaker constraints than the client was given.
+	 */
+	@Column(name = "challenge_request", nullable = false, columnDefinition = "TEXT")
+	private String challengeRequest;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private PasskeyChallengeStatus status = PasskeyChallengeStatus.PENDING;
+
+	/** Binds the challenge to the login attempt that asked for it. */
+	@Column(name = "session_id", length = 40)
+	private String sessionId;
+
+	@Column(name = "display_name", length = 64)
+	private String displayName;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "challenge_type", nullable = false, length = 30)
