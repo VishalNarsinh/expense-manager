@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: expense-manager
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/expensemanager}
+    username: ${DB_USERNAME:expense}
+    password: ${DB_PASSWORD:expense_local_dev}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  token:
+    issuer: ${TOKEN_ISSUER:expense-manager}
+    access-token-ttl: ${ACCESS_TOKEN_TTL:PT15M}
+    refresh-token-ttl: ${REFRESH_TOKEN_TTL:P30D}
+    step-up-token-ttl: ${STEP_UP_TOKEN_TTL:PT5M}
+    private-key: ${TOKEN_PRIVATE_KEY:}
+    public-key: ${TOKEN_PUBLIC_KEY:}
+  mfa:
+    totp-secret-encryption-key: ${TOTP_ENCRYPTION_KEY:}
+    recovery-code-count: 10
+  google:
+    client-ids: ${GOOGLE_CLIENT_IDS:}
+  webauthn:
+    relying-party-id: ${WEBAUTHN_RP_ID:localhost}
+    relying-party-name: ${WEBAUTHN_RP_NAME:Expense Manager}
+    origin: ${WEBAUTHN_ORIGIN:http://localhost:5173}
+  seed:
+    admin-email: ${SEED_ADMIN_EMAIL:}
+    admin-password: ${SEED_ADMIN_PASSWORD:}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO

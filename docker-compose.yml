@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: expense-manager-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-expensemanager}
+      POSTGRES_USER: ${POSTGRES_USER:-expense}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-expense_local_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - expense-manager-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-expense} -d ${POSTGRES_DB:-expensemanager}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  expense-manager-pgdata:
