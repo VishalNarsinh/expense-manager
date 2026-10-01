@@ -35,9 +35,13 @@ app:
   google:
     client-ids: ${GOOGLE_CLIENT_IDS:}
   webauthn:
-    relying-party-id: ${WEBAUTHN_RP_ID:localhost}
-    relying-party-name: ${WEBAUTHN_RP_NAME:Expense Manager}
-    origin: ${WEBAUTHN_ORIGIN:http://localhost:5173}
+    rp-id: ${WEBAUTHN_RP_ID:localhost}
+    rp-name: ${WEBAUTHN_RP_NAME:Expense Manager}
+    origins: ${WEBAUTHN_ORIGINS:http://localhost:5173}
+    challenge-ttl-millis: ${WEBAUTHN_CHALLENGE_TTL:300000}
+    allow-origin-port: ${WEBAUTHN_ALLOW_ORIGIN_PORT:false}
+    allow-origin-subdomain: ${WEBAUTHN_ALLOW_ORIGIN_SUBDOMAIN:false}
+    max-credentials-per-user: 10
   seed:
     admin-email: ${SEED_ADMIN_EMAIL:}
     admin-password: ${SEED_ADMIN_PASSWORD:}

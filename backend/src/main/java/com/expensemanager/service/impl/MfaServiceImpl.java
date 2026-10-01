@@ -130,6 +130,12 @@ public class MfaServiceImpl implements MfaService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public User pendingUser(String sessionId) {
+		return sessionHelper.requireState(sessionId, SessionState.MFA_IN_PROGRESS, "session").getUser();
+	}
+
+	@Override
 	@Transactional
 	public TokenResponse completeLogin(String sessionId, MfaType type, String proof) {
 		UserSession pending = sessionHelper.requireState(sessionId, SessionState.MFA_IN_PROGRESS, "session");

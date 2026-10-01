@@ -23,7 +23,7 @@ public class LoginWithDirectHandler extends LoginHandler {
 	}
 
 	@Override
-	public boolean canHandle(User user) {
+	public boolean canHandle(User user, SignupMethod source) {
 		// Terminal handler: ordered last, so reaching it means no earlier policy applied.
 		return true;
 	}

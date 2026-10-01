@@ -36,8 +36,11 @@ public class LoginWithMfaHandler extends LoginHandler {
 	}
 
 	@Override
-	public boolean canHandle(User user) {
-		return user.isMfaEnabled();
+	public boolean canHandle(User user, SignupMethod source) {
+		// A passkey sign-in already required user verification on the device, so the account holder
+		// has proven possession and presence in one gesture. Demanding a second factor on top adds
+		// friction without adding assurance.
+		return user.isMfaEnabled() && source != SignupMethod.PASSKEY;
 	}
 
 	@Override

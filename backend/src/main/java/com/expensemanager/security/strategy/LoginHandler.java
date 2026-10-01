@@ -27,7 +27,10 @@ public abstract class LoginHandler {
 		this.tokenIssuer = tokenIssuer;
 	}
 
-	public abstract boolean canHandle(User user);
+	/**
+	 * @param source how the credential was proven, which can itself satisfy a policy
+	 */
+	public abstract boolean canHandle(User user, SignupMethod source);
 
 	public abstract TokenResponse handle(User user, SignupMethod source, LoginContext context);
 

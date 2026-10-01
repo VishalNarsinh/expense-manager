@@ -93,7 +93,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 		// First matching handler wins; the terminal one is ordered last.
 		LoginHandler handler = loginHandlers.stream()
-				.filter(candidate -> candidate.canHandle(user))
+				.filter(candidate -> candidate.canHandle(user, credential.method()))
 				.findFirst()
 				.orElseThrow(() -> new IllegalStateException("No login handler accepted the authenticated user"));
 
