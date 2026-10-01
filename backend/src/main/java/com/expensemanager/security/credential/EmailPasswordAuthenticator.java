@@ -27,7 +27,7 @@ public class EmailPasswordAuthenticator implements CredentialAuthenticator {
 	public User authenticate(Credential credential) {
 		Credential.EmailPassword presented = (Credential.EmailPassword) credential;
 
-		User user = userHelper.findByIdentifier(presented.identifier())
+		User user = userHelper.findForSignIn(presented.identifier())
 				// Same message and timing as a wrong password, so this cannot be used to discover
 				// which accounts exist.
 				.orElseThrow(() -> unauthorized());

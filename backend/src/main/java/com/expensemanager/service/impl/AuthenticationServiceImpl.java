@@ -143,7 +143,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Override
 	@Transactional(readOnly = true)
 	public UserResponse currentUser() {
-		return userRepository.findById(requireUserId())
+		return userHelper.findById(requireUserId())
 				.map(UserResponse::from)
 				.orElseThrow(() -> new EntityNotFoundException("Account not found"));
 	}

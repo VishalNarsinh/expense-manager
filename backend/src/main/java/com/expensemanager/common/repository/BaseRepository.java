@@ -36,6 +36,18 @@ public interface BaseRepository<T, ID> extends JpaRepository<T, ID> {
 
 	boolean exists(Predicate predicate, EntityPath<T> path);
 
+	/**
+	 * Loads only the named columns into a partial entity.
+	 *
+	 * <p>Cheaper than fetching the whole row on a read path that needs a handful of fields. The
+	 * result is a detached, partially populated instance: any field not named here reads back as
+	 * null or zero rather than its stored value, so never hand one to code that will persist it.
+	 */
+	Optional<T> findOneProjected(Predicate predicate, EntityPath<T> path, Expression<?>... fields);
+
+	/** List counterpart of {@link #findOneProjected}, with the same partial-entity caveat. */
+	List<T> findAllProjected(Predicate predicate, EntityPath<T> path, List<OrderSpecifier<?>> order, Expression<?>... fields);
+
 	/** Projects into an arbitrary type via its constructor. */
 	<P> List<P> project(Predicate predicate, EntityPath<T> path, Class<P> projection, List<OrderSpecifier<?>> order, Expression<?>... fields);
 

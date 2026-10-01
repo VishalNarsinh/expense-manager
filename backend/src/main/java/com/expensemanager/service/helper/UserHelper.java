@@ -1,10 +1,12 @@
 package com.expensemanager.service.helper;
 
 import com.expensemanager.common.util.DateTimeUtil;
+import com.expensemanager.domain.jpa.QUser;
 import com.expensemanager.domain.jpa.User;
 import com.expensemanager.repository.jpa.UserRepository;
 import com.expensemanager.repository.predicate.UserPredicates;
 import com.expensemanager.security.token.TokenHasher;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,12 @@ import java.util.Optional;
 /** Account lookup and password checking. */
 @Component
 public class UserHelper {
+
+	private static final QUser USER = UserPredicates.USER;
+
+	/** Just enough to decide whether a sign-in succeeds and which handler should run. */
+	private static final Expression<?>[] SIGN_IN_FIELDS = {
+			USER.id, USER.email, USER.username, USER.password, USER.active, USER.mfaEnabled, USER.signupMethod};
 
 	/**
 	 * Verifying against this when no account exists keeps the work, and so the response time,
@@ -33,23 +41,24 @@ public class UserHelper {
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public Optional<User> findByIdentifier(String identifier) {
+	/** Partial entity: carries only {@link #SIGN_IN_FIELDS} and must not be persisted. */
+	public Optional<User> findForSignIn(String identifier) {
 		if (identifier == null || identifier.isBlank()) {
 			return Optional.empty();
 		}
-		return userRepository.findOne(UserPredicates.byIdentifier(identifier.trim()));
+		return userRepository.findOneProjected(UserPredicates.byIdentifier(identifier.trim()), USER, SIGN_IN_FIELDS);
 	}
 
-	public Optional<User> findByEmail(String email) {
-		return userRepository.findOne(UserPredicates.byEmail(email.trim()));
+	public Optional<User> findById(String userId) {
+		return userRepository.findOne(USER.id.eq(userId), USER);
 	}
 
 	public boolean emailTaken(String email) {
-		return userRepository.exists(UserPredicates.byEmail(email.trim()));
+		return userRepository.exists(UserPredicates.byEmail(email.trim()), USER);
 	}
 
 	public boolean usernameTaken(String username) {
-		return userRepository.exists(UserPredicates.byUsername(username.trim()));
+		return userRepository.exists(UserPredicates.byUsername(username.trim()), USER);
 	}
 
 	public boolean verifyPassword(User user, String presented) {
@@ -76,15 +85,24 @@ public class UserHelper {
 	@Transactional
 	public void recordSuccessfulLogin(String userId) {
 		Map<Path<?>, Object> values = new LinkedHashMap<>();
-		values.put(UserPredicates.USER.failedLoginCount, 0);
-		values.put(UserPredicates.USER.lastLogin, DateTimeUtil.currentEpochMillisUtc());
-		userRepository.updateFields(UserPredicates.USER.id.eq(userId), UserPredicates.USER, values);
+		values.put(USER.failedLoginCount, 0);
+		values.put(USER.lastLogin, DateTimeUtil.currentEpochMillisUtc());
+		userRepository.updateFields(USER.id.eq(userId), USER, values);
 	}
 
 	@Transactional
 	public void recordFailedLogin(String userId) {
 		Map<Path<?>, Object> values = new LinkedHashMap<>();
-		values.put(UserPredicates.USER.failedLoginCount, UserPredicates.USER.failedLoginCount.add(1));
-		userRepository.updateFields(UserPredicates.USER.id.eq(userId), UserPredicates.USER, values);
+		// Incremented in the database rather than read-then-written, so simultaneous failed
+		// attempts cannot overwrite each other and undercount.
+		values.put(USER.failedLoginCount, USER.failedLoginCount.add(1));
+		userRepository.updateFields(USER.id.eq(userId), USER, values);
+	}
+
+	@Transactional
+	public void setMfaEnabled(String userId, boolean enabled) {
+		Map<Path<?>, Object> values = new LinkedHashMap<>();
+		values.put(USER.mfaEnabled, enabled);
+		userRepository.updateFields(USER.id.eq(userId), USER, values);
 	}
 }

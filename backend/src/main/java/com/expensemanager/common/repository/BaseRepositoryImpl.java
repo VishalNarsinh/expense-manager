@@ -9,6 +9,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPADeleteClause;
@@ -98,6 +99,28 @@ public class BaseRepositoryImpl<T extends TimestampJpaDomain, ID> extends Simple
 		JPAQuery<T> query = newQuery().select(path).from(path);
 		applyWhere(query, predicate);
 		return query.fetchFirst() != null;
+	}
+
+	@Override
+	public Optional<T> findOneProjected(Predicate predicate, EntityPath<T> path, Expression<?>... fields) {
+		JPAQuery<T> query = newQuery().select(entityProjection(path, fields)).from(path);
+		applyWhere(query, predicate);
+		return Optional.ofNullable(query.fetchFirst());
+	}
+
+	@Override
+	public List<T> findAllProjected(Predicate predicate, EntityPath<T> path, List<OrderSpecifier<?>> order, Expression<?>... fields) {
+		JPAQuery<T> query = newQuery().select(entityProjection(path, fields)).from(path);
+		applyWhere(query, predicate);
+		applyOrder(query, order);
+		return query.fetch();
+	}
+
+	@SuppressWarnings("unchecked")
+	private QBean<T> entityProjection(EntityPath<T> path, Expression<?>... fields) {
+		// Binds by field rather than setter, so Lombok-generated accessors are irrelevant and
+		// inherited columns such as the id are populated too.
+		return Projections.fields((Class<T>) path.getType(), fields);
 	}
 
 	@Override

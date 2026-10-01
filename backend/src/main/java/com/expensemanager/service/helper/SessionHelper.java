@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,7 +46,7 @@ public class SessionHelper {
 
 	@Transactional(readOnly = true)
 	public UserSession require(String sessionId) {
-		return userSessionRepository.findOne(SESSION.id.eq(sessionId))
+		return userSessionRepository.findOne(SESSION.id.eq(sessionId), SESSION)
 				.orElseThrow(() -> new EntityNotFoundException("Session not found", ErrorType.INVALID_SESSION_STATE, "session"));
 	}
 
@@ -59,7 +58,7 @@ public class SessionHelper {
 	 */
 	@Transactional(readOnly = true)
 	public UserSession requireState(String sessionId, SessionState expected, String param) {
-		UserSession session = userSessionRepository.findOne(SESSION.id.eq(sessionId))
+		UserSession session = userSessionRepository.findOne(SESSION.id.eq(sessionId), SESSION)
 				.orElseThrow(() -> new EntityNotFoundException("Session not found", ErrorType.INVALID_SESSION_STATE, param));
 
 		if (!Objects.equals(session.getSessionState(), expected)) {
@@ -70,7 +69,12 @@ public class SessionHelper {
 
 	@Transactional(readOnly = true)
 	public Optional<UserSession> findActiveByRefreshToken(String refreshToken) {
-		return userSessionRepository.findOne(SessionPredicates.activeByRefreshTokenHash(TokenHasher.sha256(refreshToken)));
+		return userSessionRepository.findOne(
+				SessionPredicates.activeByRefreshTokenHash(TokenHasher.sha256(refreshToken)), SESSION);
+	}
+
+	public long countLiveForUser(String userId) {
+		return userSessionRepository.count(SessionPredicates.liveForUser(userId), SESSION);
 	}
 
 	@Transactional
@@ -90,6 +94,19 @@ public class SessionHelper {
 
 	@Transactional
 	public void expire(String sessionId) {
+		userSessionRepository.updateFields(SESSION.id.eq(sessionId), SESSION, expiryValues());
+	}
+
+	/**
+	 * Ends every live session for the user in one statement, rather than loading them and updating
+	 * each in turn.
+	 */
+	@Transactional
+	public int expireAllForUser(String userId) {
+		return (int) userSessionRepository.updateFields(SessionPredicates.liveForUser(userId), SESSION, expiryValues());
+	}
+
+	private Map<Path<?>, Object> expiryValues() {
 		Map<Path<?>, Object> values = new LinkedHashMap<>();
 		values.put(SESSION.sessionState, SessionState.EXPIRED);
 		// Clearing the hash is what actually revokes the token: a lookup by hash can no longer
@@ -97,13 +114,6 @@ public class SessionHelper {
 		values.put(SESSION.refreshTokenHash, null);
 		values.put(SESSION.otp, null);
 		values.put(SESSION.expiresAt, DateTimeUtil.currentEpochMillisUtc());
-		userSessionRepository.updateFields(SESSION.id.eq(sessionId), SESSION, values);
-	}
-
-	@Transactional
-	public int expireAllForUser(String userId) {
-		List<UserSession> live = userSessionRepository.findAll(SessionPredicates.liveForUser(userId), SESSION);
-		live.forEach(session -> expire(session.getId()));
-		return live.size();
+		return values;
 	}
 }
