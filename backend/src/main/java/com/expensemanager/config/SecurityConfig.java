@@ -25,7 +25,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(com.expensemanager.security.token.TokenProperties.class)
+@EnableConfigurationProperties({com.expensemanager.security.token.TokenProperties.class, MfaProperties.class})
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;

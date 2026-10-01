@@ -286,3 +286,9 @@ ALTER TABLE passkey_challenges ADD COLUMN display_name VARCHAR(64);
 ALTER TABLE passkey_challenges ALTER COLUMN challenge_request DROP DEFAULT;
 ALTER TABLE passkey_challenges ALTER COLUMN status DROP DEFAULT;
 CREATE INDEX ix_passkey_challenges_expiry ON passkey_challenges (expires_at);
+
+--changeset alterTableUserMfaConfigurationsAddLastUsedStep:18
+-- A TOTP code stays valid for its whole time step, so without recording the last step accepted a
+-- code observed in transit can be replayed within that window. Storing it lets verification refuse
+-- any step already used.
+ALTER TABLE user_mfa_configurations ADD COLUMN last_used_time_step BIGINT;

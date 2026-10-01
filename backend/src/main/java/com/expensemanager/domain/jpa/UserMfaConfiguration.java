@@ -43,4 +43,12 @@ public class UserMfaConfiguration extends IdentityJpaDomain {
 
 	@Column(name = "verified_at")
 	private Long verifiedAt;
+
+	/**
+	 * The last time step accepted for this factor. A code remains valid for its whole step, so
+	 * refusing a step that has already been used is what stops one observed in transit from being
+	 * replayed before it expires.
+	 */
+	@Column(name = "last_used_time_step")
+	private Long lastUsedTimeStep;
 }
