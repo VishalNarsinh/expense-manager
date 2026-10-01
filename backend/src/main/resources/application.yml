@@ -34,6 +34,7 @@ app:
     recovery-code-count: 10
   google:
     client-ids: ${GOOGLE_CLIENT_IDS:}
+    allow-signup: ${GOOGLE_ALLOW_SIGNUP:true}
   webauthn:
     rp-id: ${WEBAUTHN_RP_ID:localhost}
     rp-name: ${WEBAUTHN_RP_NAME:Expense Manager}

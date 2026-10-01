@@ -1,6 +1,7 @@
 package com.expensemanager.controller;
 
 import com.expensemanager.common.context.RequestContext;
+import com.expensemanager.dto.request.GoogleLoginRequest;
 import com.expensemanager.dto.request.LoginRequest;
 import com.expensemanager.dto.request.LogoutRequest;
 import com.expensemanager.dto.request.RefreshTokenRequest;
@@ -39,6 +40,16 @@ public class AuthenticationController {
 	@PostMapping(Endpoints.LOGIN)
 	public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
 		Credential credential = new Credential.EmailPassword(request.identifier(), request.password());
+		return ResponseEntity.ok(authenticationService.login(credential, loginContext()));
+	}
+
+	/**
+	 * Sign-in and first-time sign-up share one endpoint. Google has already told us whether this
+	 * identity is new, so making the client guess which to call would only invite it to guess wrong.
+	 */
+	@PostMapping({Endpoints.SSO_LOGIN, Endpoints.SSO_SIGNUP})
+	public ResponseEntity<TokenResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+		Credential credential = new Credential.GoogleIdToken(request.idToken());
 		return ResponseEntity.ok(authenticationService.login(credential, loginContext()));
 	}
 
