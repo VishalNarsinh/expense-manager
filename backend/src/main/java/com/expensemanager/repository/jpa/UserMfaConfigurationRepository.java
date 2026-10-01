@@ -1,19 +1,12 @@
 package com.expensemanager.repository.jpa;
 
 import com.expensemanager.common.repository.CustomRepository;
-import com.expensemanager.domain.enums.MfaType;
 import com.expensemanager.domain.jpa.UserMfaConfiguration;
 
-import java.util.List;
-import java.util.Optional;
-
+/**
+ * Queries are expressed as QueryDSL predicates at the call site rather than as derived method
+ * names, so filters compose and stay type-checked. Declared methods here are limited to the ones
+ * that need an annotation the vocabulary cannot express, such as a lock mode.
+ */
 public interface UserMfaConfigurationRepository extends CustomRepository<UserMfaConfiguration, String> {
-
-	Optional<UserMfaConfiguration> findByUserIdAndMfaType(String userId, MfaType mfaType);
-
-	List<UserMfaConfiguration> findByUserId(String userId);
-
-	List<UserMfaConfiguration> findByUserIdAndEnabledTrue(String userId);
-
-	boolean existsByUserIdAndEnabledTrue(String userId);
 }

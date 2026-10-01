@@ -6,6 +6,8 @@ import com.expensemanager.domain.jpa.Category;
 import com.expensemanager.domain.jpa.User;
 import com.expensemanager.repository.jpa.CategoryRepository;
 import com.expensemanager.repository.jpa.UserRepository;
+import com.expensemanager.repository.predicate.CategoryPredicates;
+import com.expensemanager.repository.predicate.UserPredicates;
 import com.expensemanager.support.PostgresIntegrationTest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.EntityType;
@@ -52,7 +54,8 @@ class SchemaTest extends PostgresIntegrationTest {
 
 	@Test
 	void defaultCategoriesAreSeededAsSystemCategories() {
-		List<Category> seeded = categoryRepository.findVisibleTo("usr_nobody");
+		List<Category> seeded = categoryRepository.findAll(
+				CategoryPredicates.visibleTo("usr_nobody"), CategoryPredicates.CATEGORY, CategoryPredicates.byName());
 
 		assertThat(seeded).hasSize(19);
 		assertThat(seeded).allMatch(Category::isSystemCategory);

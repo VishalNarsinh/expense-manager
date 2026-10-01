@@ -44,6 +44,10 @@ public class SecurityConfig {
 		http
 				.csrf(csrf -> csrf.disable())
 				.cors(Customizer.withDefaults())
+				// Spring Security registers its own filter on /logout that answers with a redirect.
+				// Ours revokes a specific session and returns JSON, so the built-in one must go or
+				// it intercepts the request first and the controller is never reached.
+				.logout(logout -> logout.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(Endpoints.PUBLIC.toArray(new String[0])).permitAll()

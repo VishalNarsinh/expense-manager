@@ -3,14 +3,10 @@ package com.expensemanager.repository.jpa;
 import com.expensemanager.common.repository.CustomRepository;
 import com.expensemanager.domain.jpa.Budget;
 
-import java.util.List;
-import java.util.Optional;
-
+/**
+ * Queries are expressed as QueryDSL predicates at the call site rather than as derived method
+ * names, so filters compose and stay type-checked. Declared methods here are limited to the ones
+ * that need an annotation the vocabulary cannot express, such as a lock mode.
+ */
 public interface BudgetRepository extends CustomRepository<Budget, String> {
-
-	Optional<Budget> findByUserIdAndMonthAndYear(String userId, int month, int year);
-
-	List<Budget> findByUserId(String userId);
-
-	long countByUserId(String userId);
 }

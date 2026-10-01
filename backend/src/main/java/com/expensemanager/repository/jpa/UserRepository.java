@@ -3,18 +3,10 @@ package com.expensemanager.repository.jpa;
 import com.expensemanager.common.repository.CustomRepository;
 import com.expensemanager.domain.jpa.User;
 
-import java.util.Optional;
-
+/**
+ * Queries are expressed as QueryDSL predicates at the call site rather than as derived method
+ * names, so filters compose and stay type-checked. Declared methods here are limited to the ones
+ * that need an annotation the vocabulary cannot express, such as a lock mode.
+ */
 public interface UserRepository extends CustomRepository<User, String> {
-
-	Optional<User> findByEmailIgnoreCase(String email);
-
-	Optional<User> findByUsernameIgnoreCase(String username);
-
-	/** Login accepts either identifier, matching what the sign-in form offers. */
-	Optional<User> findByEmailIgnoreCaseOrUsernameIgnoreCase(String email, String username);
-
-	boolean existsByEmailIgnoreCase(String email);
-
-	boolean existsByUsernameIgnoreCase(String username);
 }

@@ -11,14 +11,14 @@ import java.util.Optional;
 
 public interface AccountBalanceRepository extends CustomRepository<AccountBalance, String> {
 
-	Optional<AccountBalance> findByUserId(String userId);
-
 	/**
 	 * Takes a row lock for the duration of the transaction.
 	 *
 	 * <p>The balance is updated as read-modify-write, so two concurrent requests for the same user
 	 * would otherwise both read the old value and one update would be lost silently and
 	 * permanently. Every write path must load the row through this method.
+	 *
+	 * <p>Declared rather than built as a predicate because the lock mode is an annotation.
 	 */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT a FROM AccountBalance a WHERE a.user.id = :userId")

@@ -130,11 +130,10 @@ public class BaseRepositoryImpl<T extends TimestampJpaDomain, ID> extends Simple
 		withTimestamp.putIfAbsent(Expressions.numberPath(Long.class, path, MODIFIED_FIELD), DateTimeUtil.currentEpochMillisUtc());
 		withTimestamp.forEach((field, value) -> applyValue(update, field, value));
 
-		long updated = update.execute();
-
-		// A bulk clause bypasses the persistence context, so stale copies would otherwise survive.
-		entityManager.clear();
-		return updated;
+		// Deliberately does not clear the persistence context. Clearing would detach every managed
+		// entity mid-transaction, breaking lazy loading for callers that are still working. In-memory
+		// copies of the updated rows are stale afterwards; re-read if the new values are needed.
+		return update.execute();
 	}
 
 	@Override
@@ -144,9 +143,9 @@ public class BaseRepositoryImpl<T extends TimestampJpaDomain, ID> extends Simple
 		if (predicate != null) {
 			delete.where(predicate);
 		}
-		long deleted = delete.execute();
-		entityManager.clear();
-		return deleted;
+		// Like updateFields, leaves the persistence context alone; deleted rows may still be held
+		// as managed entities by the caller.
+		return delete.execute();
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
