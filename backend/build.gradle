@@ -58,4 +58,6 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+	// Match the runtime: the JDBC driver sends the JVM default zone to PostgreSQL on connect.
+	systemProperty 'user.timezone', 'UTC'
 }
